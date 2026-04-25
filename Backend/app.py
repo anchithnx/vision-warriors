@@ -14,6 +14,12 @@ from PIL import Image, ImageDraw, ImageFont
 import openpyxl
 from docx import Document
 
+import easyocr
+import numpy as np
+
+# Initialize the reader once at the top of your file (outside the function)
+reader = easyocr.Reader(['en'])
+
 app = Flask(__name__)
 CORS(app)
 
@@ -187,33 +193,40 @@ def extract_pdf_findings(pdf_bytes):
 
 
 def process_image(img_bytes, filename):
-    
     try:
-        img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
-        draw = ImageDraw.Draw(img)
-        # Attempt basic pytesseract if available
-        try:
-            import pytesseract
-            text = pytesseract.image_to_string(img)
-            findings = scan_text(text)
-            # Draw black boxes over found regions
-            data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
-            words = data["text"]
+        # 1. Convert bytes to PIL Image
+        img_pil = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+        img_np = np.array(img_pil) # EasyOCR needs a numpy array
+        
+        # 2. Extract Text with EasyOCR
+        # detail=0 returns just the strings, which is faster
+        results = reader.readtext(img_np) 
+        
+        # results looks like: [([[x,y],[x,y]...], 'text', confidence), ...]
+        full_text = " ".join([res[1] for res in results])
+        findings = scan_text(full_text)
+        
+        # 3. Redact the Image
+        draw = ImageDraw.Draw(img_pil)
+        for res in results:
+            box, text, conf = res
+            # Check if this specific piece of text is part of any sensitive finding
             for f in findings:
-                for i, word in enumerate(words):
-                    if word and word in f["value"]:
-                        x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
-                        draw.rectangle([x, y, x+w, y+h], fill="black")
-        except Exception:
-            text = f"[Image file: {filename}]"
-            findings = []
-        # Encode redacted image
+                if text in f["value"] or f["value"] in text:
+                    # box is [[x,y], [x,y], [x,y], [x,y]]
+                    top_left = tuple(box[0])
+                    bottom_right = tuple(box[2])
+                    draw.rectangle([top_left, bottom_right], fill="black")
+        
+        # 4. Encode to Base64
         buf = io.BytesIO()
-        img.save(buf, format="PNG")
+        img_pil.save(buf, format="PNG")
         b64 = base64.b64encode(buf.getvalue()).decode()
-        return findings, text, b64
+        
+        return findings, full_text, b64
     except Exception as e:
-        return [], "", None
+        print(f"Image processing error: {e}")
+        return [], f"Error: {str(e)}", None
 
 
 def process_excel(excel_bytes):

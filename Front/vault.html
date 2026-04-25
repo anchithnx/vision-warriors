@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vault — Personal Data Privacy Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        :root {
+            --bg: #06091A;
+            --glass: rgba(255, 255, 255, 0.045);
+            --glass2: rgba(255, 255, 255, 0.07);
+            --border: rgba(255, 255, 255, 0.08);
+            --border2: rgba(255, 255, 255, 0.13);
+            --teal: #00D4B4;
+            --teal-glow: rgba(0, 212, 180, 0.18);
+            --teal-dim: rgba(0, 212, 180, 0.12);
+            --coral: #FF5F6D;
+            --amber: #FFBA49;
+            --violet: #9B6DFF;
+            --blue: #4D8EFF;
+            --green: #00D97E;
+            --text: #ECF0FF;
+            --text2: rgba(236, 240, 255, 0.58);
+            --text3: rgba(236, 240, 255, 0.32);
+            --head: 'Syne', sans-serif;
+            --mono: 'DM Mono', monospace;
+            --body: 'Inter', sans-serif;
+            --r: 20px;
+            --r2: 14px;
+            --r3: 10px;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased
+        }
+
+        /* ── BACKGROUND ── */
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(115px)
+        }
+
+        .o1 {
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(75, 47, 208, .55) 0%, transparent 70%);
+            top: -180px;
+            left: -120px;
+            animation: f1 22s ease-in-out infinite alternate
+        }
+
+        .o2 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 170, 150, .35) 0%, transparent 70%);
+            bottom: -100px;
+            right: -80px;
+            animation: f2 26s ease-in-out infinite alternate
+        }
+
+        .o3 {
+            width: 480px;
+            height: 480px;
+            background: radial-gradient(circle, rgba(255, 80, 100, .2) 0%, transparent 70%);
+            top: 45%;
+            left: 52%;
+            transform: translate(-50%, -50%);
+            animation: f3 19s ease-in-out infinite alternate
+        }
+
+        .o4 {
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(77, 142, 255, .28) 0%, transparent 70%);
+            top: 18%;
+            right: 8%;
+            animation: f1 30s ease-in-out infinite alternate-reverse
+        }
+
+        @keyframes f1 {
+            0% {
+                transform: translate(0, 0)
+            }
+
+            100% {
+                transform: translate(50px, 60px)
+            }
+        }
+
+        @keyframes f2 {
+            0% {
+                transform: translate(0, 0)
+            }
+
+            100% {
+                transform: translate(-60px, -40px)
+            }
+        }
+
+        @keyframes f3 {
+            0% {
+                transform: translate(-50%, -50%) scale(1)
+            }
+
+            100% {
+                transform: translate(-45%, -55%) scale(1.15)
+            }
+        }
+
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image: linear-gradient(rgba(255, 255, 255, .022) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .022) 1px, transparent 1px);
+            background-size: 52px 52px
+        }
+
+        /* ── SHELL ── */
+        .shell {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 20px 100px
+        }
+
+        /* ── NAV ── */
+        nav {
+            width: 100%;
+            max-width: 1080px;
+            padding: 28px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: sd .6s ease both
+        }
+
+        .logo {
+            font-family: var(--head);
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text)
+        }
+
+        .logo-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--teal), var(--blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+
+        .srv-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--mono);
+            font-size: .67rem;
+            color: var(--text3);
+            letter-spacing: .04em;
+            padding: 6px 13px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: var(--glass)
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text3)
+        }
+
+        .dot.on {
+            background: var(--green);
+            box-shadow: 0 0 8px #00D97E88;
+            animation: pd 2s ease infinite
+        }
+
+        .dot.off {
+            background: var(--coral)
+        }
+
+        @keyframes pd {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .35
+            }
+        }
+
+        .vtag {
+            font-family: var(--mono);
+            font-size: .66rem;
+            color: var(--teal);
+            background: var(--teal-dim);
+            border: 1px solid rgba(0, 212, 180, .22);
+            border-radius: 100px;
+            padding: 5px 13px;
+            letter-spacing: .05em
+        }
+
+        /* ── GLASS ── */
+        .glass {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border-radius: var(--r)
+        }
+
+        /* ── HERO ── */
+        .hero {
+            width: 100%;
+            max-width: 720px;
+            text-align: center;
+            padding: 80px 0 62px
+        }
+
+        .hero-eye {
+            font-family: var(--mono);
+            font-size: .7rem;
+            letter-spacing: .2em;
+            color: var(--teal);
+            text-transform: uppercase;
+            margin-bottom: 22px;
+            opacity: 0;
+            animation: fu .7s .1s ease both
+        }
+
+        .hero h1 {
+            font-family: var(--head);
+            font-size: clamp(2.5rem, 6vw, 4.4rem);
+            font-weight: 800;
+            line-height: 1.06;
+            letter-spacing: -.034em;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fu .7s .22s ease both
+        }
+
+        .grad {
+            background: linear-gradient(130deg, var(--teal) 0%, var(--blue) 42%, var(--violet) 85%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .hero-sub {
+            font-size: 1.02rem;
+            color: var(--text2);
+            line-height: 1.68;
+            max-width: 500px;
+            margin: 0 auto 50px;
+            opacity: 0;
+            animation: fu .7s .34s ease both
+        }
+
+        .chip-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: fu .7s .44s ease both
+        }
+
+        .chip {
+            font-family: var(--mono);
+            font-size: .63rem;
+            letter-spacing: .06em;
+            color: var(--text3);
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 10px
+        }
+
+        /* ── UPLOAD ── */
+        #su {
+            width: 100%;
+            max-width: 600px;
+            opacity: 0;
+            animation: fu .7s .52s ease both
+        }
+
+        .ucard {
+            padding: 56px 40px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: border-color .3s, transform .3s, box-shadow .3s
+        }
+
+        .ucard::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: var(--r);
+            background: radial-gradient(ellipse at 50% 110%, rgba(0, 212, 180, .08), transparent 65%);
+            opacity: 0;
+            transition: opacity .35s;
+            pointer-events: none
+        }
+
+        .ucard:hover {
+            border-color: rgba(0, 212, 180, .38);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 0 50px rgba(0, 212, 180, .1), 0 24px 60px rgba(0, 0, 0, .5)
+        }
+
+        .ucard:hover::after {
+            opacity: 1
+        }
+
+        .ucard.drag {
+            border-color: var(--teal);
+            background: rgba(0, 212, 180, .05);
+            transform: scale(1.015)
+        }
+
+        .uiw {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(0, 212, 180, .14), rgba(77, 142, 255, .1));
+            border: 1px solid rgba(0, 212, 180, .2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 2rem;
+            transition: transform .3s
+        }
+
+        .ucard:hover .uiw {
+            transform: scale(1.1) rotate(-4deg)
+        }
+
+        .utitle {
+            font-family: var(--head);
+            font-size: 1.28rem;
+            font-weight: 700;
+            margin-bottom: 8px
+        }
+
+        .udesc {
+            font-size: .9rem;
+            color: var(--text2);
+            line-height: 1.6;
+            margin-bottom: 28px
+        }
+
+        .udesc span {
+            color: var(--teal);
+            font-weight: 500;
+            cursor: pointer
+        }
+
+        .ubtn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--teal), var(--blue));
+            color: #06091A;
+            font-family: var(--head);
+            font-weight: 700;
+            font-size: .9rem;
+            padding: 13px 30px;
+            border-radius: 100px;
+            border: none;
+            cursor: pointer;
+            transition: transform .2s, box-shadow .2s;
+            letter-spacing: .01em
+        }
+
+        .ubtn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 0 30px rgba(0, 212, 180, .4)
+        }
+
+        .ubtn:active {
+            transform: scale(.97)
+        }
+
+        .ulimit {
+            font-family: var(--mono);
+            font-size: .63rem;
+            color: var(--text3);
+            margin-top: 16px;
+            letter-spacing: .04em
+        }
+
+        #fi {
+            display: none
+        }
+
+        /* ── PROCESSING ── */
+        #sp {
+            display: none;
+            width: 100%;
+            max-width: 520px;
+            text-align: center
+        }
+
+        .swrap {
+            padding: 60px 40px
+        }
+
+        .docbox {
+            position: relative;
+            width: 150px;
+            height: 190px;
+            margin: 0 auto 36px
+        }
+
+        .docframe {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            border: 1.5px solid rgba(0, 212, 180, .3);
+            background: rgba(0, 212, 180, .04);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 18px 15px;
+            overflow: hidden
+        }
+
+        .dl {
+            height: 7px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, .07)
+        }
+
+        .dl.r {
+            background: rgba(0, 212, 180, .35) !important;
+            animation: bl 1.2s ease infinite
+        }
+
+        @keyframes bl {
+
+            0%,
+            100% {
+                opacity: .3
+            }
+
+            50% {
+                opacity: 1
+            }
+        }
+
+        .laser {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--teal), rgba(0, 212, 180, .55), var(--teal), transparent);
+            border-radius: 2px;
+            box-shadow: 0 0 12px 3px rgba(0, 212, 180, .55);
+            animation: sc 2.2s ease-in-out infinite;
+            top: 0
+        }
+
+        @keyframes sc {
+            0% {
+                top: 0;
+                opacity: 0
+            }
+
+            8% {
+                opacity: 1
+            }
+
+            92% {
+                opacity: 1
+            }
+
+            100% {
+                top: 186px;
+                opacity: 0
+            }
+        }
+
+        .corner {
+            position: absolute;
+            width: 13px;
+            height: 13px;
+            border-color: var(--teal);
+            border-style: solid;
+            opacity: .65
+        }
+
+        .c-tl {
+            top: -1px;
+            left: -1px;
+            border-width: 2px 0 0 2px;
+            border-radius: 4px 0 0 0
+        }
+
+        .c-tr {
+            top: -1px;
+            right: -1px;
+            border-width: 2px 2px 0 0;
+            border-radius: 0 4px 0 0
+        }
+
+        .c-bl {
+            bottom: -1px;
+            left: -1px;
+            border-width: 0 0 2px 2px;
+            border-radius: 0 0 0 4px
+        }
+
+        .c-br {
+            bottom: -1px;
+            right: -1px;
+            border-width: 0 2px 2px 0;
+            border-radius: 0 0 4px 0
+        }
+
+        .slbl {
+            font-family: var(--head);
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px
+        }
+
+        .sstatus {
+            font-family: var(--mono);
+            font-size: .78rem;
+            color: var(--teal);
+            min-height: 1.4em;
+            transition: opacity .25s
+        }
+
+        .pips {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 24px
+        }
+
+        .pip {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--border2)
+        }
+
+        .pip.a {
+            background: var(--teal);
+            box-shadow: 0 0 8px var(--teal)
+        }
+
+        /* ── RESULTS ── */
+        #sr {
+            display: none;
+            width: 100%;
+            max-width: 1000px
+        }
+
+        /* Risk banner */
+        .rbanner {
+            padding: 32px 36px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            flex-wrap: wrap
+        }
+
+        .rgauge {
+            flex-shrink: 0;
+            position: relative;
+            width: 100px;
+            height: 100px
+        }
+
+        .rgauge svg {
+            transform: rotate(-90deg)
+        }
+
+        .rtrack {
+            fill: none;
+            stroke: rgba(255, 255, 255, .06);
+            stroke-width: 8
+        }
+
+        .rfill {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.2s cubic-bezier(.34, 1.56, .64, 1), stroke 1.2s ease
+        }
+
+        .rval {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--head);
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -.03em
+        }
+
+        .rinfo {
+            flex: 1;
+            min-width: 200px
+        }
+
+        .rtitle {
+            font-family: var(--head);
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 6px
+        }
+
+        .rdesc {
+            font-size: .87rem;
+            color: var(--text2);
+            line-height: 1.55;
+            max-width: 420px
+        }
+
+        .spills {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap
+        }
+
+        .spl {
+            font-family: var(--mono);
+            font-size: .67rem;
+            letter-spacing: .05em;
+            padding: 5px 12px;
+            border-radius: 100px;
+            border: 1px solid
+        }
+
+        .spl.critical {
+            color: #FF5F6D;
+            border-color: rgba(255, 95, 109, .3);
+            background: rgba(255, 95, 109, .08)
+        }
+
+        .spl.high {
+            color: #FFBA49;
+            border-color: rgba(255, 186, 73, .3);
+            background: rgba(255, 186, 73, .08)
+        }
+
+        .spl.medium {
+            color: #9B6DFF;
+            border-color: rgba(155, 109, 255, .3);
+            background: rgba(155, 109, 255, .08)
+        }
+
+        .spl.low {
+            color: #4D8EFF;
+            border-color: rgba(77, 142, 255, .3);
+            background: rgba(77, 142, 255, .08)
+        }
+
+        /* Section label */
+        .slabel {
+            font-family: var(--mono);
+            font-size: .67rem;
+            letter-spacing: .15em;
+            color: var(--text3);
+            text-transform: uppercase;
+            margin: 28px 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .slabel::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border)
+        }
+
+        /* Findings grid */
+        .fgrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+            gap: 12px;
+            margin-bottom: 4px
+        }
+
+        .fcard {
+            padding: 18px 20px;
+            border-radius: var(--r2);
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            transition: border-color .25s, transform .25s
+        }
+
+        .fcard:hover {
+            transform: translateY(-2px)
+        }
+
+        .fibox {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            border: 1px solid
+        }
+
+        .fbody {
+            flex: 1;
+            min-width: 0
+        }
+
+        .ftype {
+            font-family: var(--head);
+            font-size: .82rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .fval {
+            font-family: var(--mono);
+            font-size: .77rem;
+            color: var(--text2);
+            letter-spacing: .04em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 7px
+        }
+
+        .sbadge {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: .59rem;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            padding: 3px 9px;
+            border-radius: 100px;
+            border: 1px solid
+        }
+
+        /* No findings */
+        .nofind {
+            text-align: center;
+            padding: 48px 32px
+        }
+
+        .nofind-icon {
+            font-size: 2.5rem;
+            margin-bottom: 14px
+        }
+
+        .nofind h3 {
+            font-family: var(--head);
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--green)
+        }
+
+        .nofind p {
+            font-size: .88rem;
+            color: var(--text2)
+        }
+
+        /* Output panel */
+        .opanel {
+            padding: 28px 32px
+        }
+
+        .ometa {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px
+        }
+
+        .otitle {
+            font-family: var(--head);
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px
+        }
+
+        .omini {
+            font-family: var(--mono);
+            font-size: .68rem;
+            color: var(--text3);
+            letter-spacing: .04em;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-wrap: wrap
+        }
+
+        .sep {
+            opacity: .3
+        }
+
+        .acts {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex-shrink: 0
+        }
+
+        .btnp {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--teal), var(--blue));
+            color: #06091A;
+            font-family: var(--head);
+            font-weight: 700;
+            font-size: .87rem;
+            padding: 12px 24px;
+            border-radius: 100px;
+            border: none;
+            cursor: pointer;
+            transition: transform .2s, box-shadow .2s;
+            letter-spacing: .01em
+        }
+
+        .btnp:hover {
+            transform: scale(1.04);
+            box-shadow: 0 0 28px rgba(0, 212, 180, .38)
+        }
+
+        .btnp:active {
+            transform: scale(.97)
+        }
+
+        .btng {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--glass);
+            color: var(--text2);
+            font-family: var(--head);
+            font-weight: 600;
+            font-size: .87rem;
+            padding: 12px 24px;
+            border-radius: 100px;
+            border: 1px solid var(--border2);
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .btng:hover {
+            background: var(--glass2);
+            color: var(--text);
+            border-color: rgba(255, 255, 255, .2)
+        }
+
+        .imgprev {
+            width: 100%;
+            border-radius: var(--r3);
+            border: 1px solid var(--border);
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            max-height: 440px
+        }
+
+        .imgprev img {
+            width: 100%;
+            object-fit: contain;
+            max-height: 440px;
+            display: block
+        }
+
+        .noprev {
+            padding: 48px;
+            text-align: center
+        }
+
+        .noprev-icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            opacity: .5
+        }
+
+        .noprev p {
+            font-size: .87rem;
+            color: var(--text2);
+            line-height: 1.6
+        }
+
+        .txprev {
+            font-family: var(--mono);
+            font-size: .72rem;
+            color: var(--text2);
+            line-height: 1.7;
+            background: rgba(0, 0, 0, .3);
+            border-radius: var(--r3);
+            border: 1px solid var(--border);
+            padding: 16px 18px;
+            max-height: 210px;
+            overflow-y: auto;
+            letter-spacing: .02em;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-top: 14px
+        }
+
+        .txprev::-webkit-scrollbar {
+            width: 4px
+        }
+
+        .txprev::-webkit-scrollbar-thumb {
+            background: var(--border2);
+            border-radius: 2px
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: rgba(255, 95, 109, .12);
+            border: 1px solid rgba(255, 95, 109, .35);
+            backdrop-filter: blur(20px);
+            color: var(--text);
+            font-size: .84rem;
+            padding: 12px 22px;
+            border-radius: 100px;
+            z-index: 999;
+            transition: transform .4s cubic-bezier(.34, 1.56, .64, 1), opacity .4s;
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            max-width: 92vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: var(--body)
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1
+        }
+
+        /* Footer */
+        footer {
+            width: 100%;
+            max-width: 1080px;
+            padding: 48px 0 0;
+            border-top: 1px solid var(--border);
+            margin-top: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px
+        }
+
+        .fc {
+            font-family: var(--mono);
+            font-size: .67rem;
+            color: var(--text3);
+            letter-spacing: .04em
+        }
+
+        /* Animations */
+        @keyframes fu {
+            from {
+                opacity: 0;
+                transform: translateY(18px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes sd {
+            from {
+                opacity: 0;
+                transform: translateY(-12px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes pi {
+            0% {
+                opacity: 0;
+                transform: scale(.88)
+            }
+
+            60% {
+                transform: scale(1.03)
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        .anim-pop {
+            animation: pi .55s cubic-bezier(.34, 1.56, .64, 1) both
+        }
+
+        .anim-up {
+            animation: fu .45s ease both
+        }
+
+        @media(max-width:640px) {
+            .hero {
+                padding: 56px 0 40px
+            }
+
+            .ucard {
+                padding: 38px 22px
+            }
+
+            .rbanner {
+                gap: 18px;
+                padding: 22px 20px
+            }
+
+            .opanel {
+                padding: 20px
+            }
+
+            .acts {
+                flex-direction: column;
+                width: 100%
+            }
+
+            .btnp,
+            .btng {
+                justify-content: center
+            }
+
+            nav {
+                flex-wrap: wrap;
+                gap: 10px
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-canvas">
+        <div class="orb o1"></div>
+        <div class="orb o2"></div>
+        <div class="orb o3"></div>
+        <div class="orb o4"></div>
+    </div>
+    <div class="grid-bg"></div>
+
+    <div class="shell">
+
+        <!-- NAV -->
+        <nav>
+            <a class="logo" href="#">
+                <div class="logo-icon">🔐</div>Vault
+            </a>
+            <div class="nav-right">
+                <div class="srv-status">
+                    <div class="dot" id="sdot"></div>
+                    <span id="stxt">checking…</span>
+                </div>
+                <div class="vtag">v1.0.0</div>
+            </div>
+        </nav>
+
+        <!-- ═══════════════════ UPLOAD STATE ═══════════════════ -->
+        <div id="su">
+            <div class="hero">
+                <div class="hero-eye">Personal Data Privacy Analyzer</div>
+                <h1>Shield your data<br /><span class="grad">before you share.</span></h1>
+                <p class="hero-sub">Upload any document — PDF, image, Word, or spreadsheet. Vault detects 14 types of
+                    sensitive Indian PII and returns a safely redacted version in seconds.</p>
+                <div class="chip-row">
+                    <span class="chip">PDF</span><span class="chip">PNG / JPG</span>
+                    <span class="chip">DOCX</span><span class="chip">XLSX</span>
+                    <span class="chip">TXT</span><span class="chip">WEBP</span>
+                    <span class="chip">BMP · TIFF</span>
+                </div>
+            </div>
+
+            <div class="ucard glass" id="dz">
+                <div class="uiw">📄</div>
+                <div class="utitle">Drop your document here</div>
+                <div class="udesc">
+                    Drag &amp; drop or <span onclick="document.getElementById('fi').click()">browse from
+                        device</span><br />
+                    All scanning happens server-side · Your original file is never stored
+                </div>
+                <button class="ubtn" onclick="document.getElementById('fi').click()">
+                    <span>↑</span> Choose File
+                </button>
+                <div class="ulimit">Aadhaar · PAN · Phone · Email · Passport · Driving Licence · Bank · IFSC · Card ·
+                    GST · IP · Pincode · Voter ID · DOB</div>
+                <input type="file" id="fi" accept=".pdf,.png,.jpg,.jpeg,.webp,.bmp,.tiff,.xlsx,.xls,.docx,.txt" />
+            </div>
+        </div>
+
+        <!-- ═══════════════════ PROCESSING STATE ════════════════ -->
+        <div id="sp">
+            <div class="swrap glass">
+                <div class="docbox">
+                    <div class="docframe">
+                        <div class="dl" style="width:75%"></div>
+                        <div class="dl" style="width:55%"></div>
+                        <div class="dl" style="width:88%"></div>
+                        <div class="dl r" style="width:63%"></div>
+                        <div class="dl" style="width:72%"></div>
+                        <div class="dl r" style="width:49%"></div>
+                        <div class="dl" style="width:80%"></div>
+                        <div class="dl" style="width:59%"></div>
+                    </div>
+                    <div class="laser"></div>
+                    <div class="corner c-tl"></div>
+                    <div class="corner c-tr"></div>
+                    <div class="corner c-bl"></div>
+                    <div class="corner c-br"></div>
+                </div>
+                <div class="slbl">Analyzing Document</div>
+                <div class="sstatus" id="sstatus">Initializing OCR engine…</div>
+                <div class="pips">
+                    <div class="pip a" id="p0"></div>
+                    <div class="pip" id="p1"></div>
+                    <div class="pip" id="p2"></div>
+                    <div class="pip" id="p3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════ RESULTS STATE ═══════════════════ -->
+        <div id="sr">
+
+            <!-- Risk Banner -->
+            <div class="rbanner glass anim-pop" id="rbanner">
+                <div class="rgauge">
+                    <svg width="100" height="100" viewBox="0 0 100 100">
+                        <circle class="rtrack" cx="50" cy="50" r="40" />
+                        <circle class="rfill" id="rarc" cx="50" cy="50" r="40" stroke-dasharray="251.2"
+                            stroke-dashoffset="251.2" />
+                    </svg>
+                    <div class="rval" id="rval">0</div>
+                </div>
+                <div class="rinfo">
+                    <div class="rtitle" id="rtitle">—</div>
+                    <div class="rdesc" id="rdesc">—</div>
+                    <div class="spills" id="spills"></div>
+                </div>
+            </div>
+
+            <!-- Findings -->
+            <div id="fsec"></div>
+
+            <!-- Output Panel -->
+            <div class="slabel">Sanitized Output</div>
+            <div class="opanel glass">
+                <div class="ometa">
+                    <div>
+                        <div class="otitle">📁 <span id="ofname">—</span></div>
+                        <div class="omini">
+                            <span id="otype">—</span><span class="sep">·</span>
+                            <span id="opages">—</span><span class="sep">·</span>
+                            <span id="ocount">—</span>
+                        </div>
+                    </div>
+                    <div class="acts">
+                        <button class="btnp" id="dlbtn">⬇ Download Safe File</button>
+                        <button class="btng" onclick="resetApp()">↩ Analyze Another</button>
+                    </div>
+                </div>
+                <div id="prevarea"></div>
+                <div id="txwrap" style="display:none">
+                    <div class="slabel" style="margin-top:14px">Extracted Text Preview</div>
+                    <div class="txprev" id="txprev"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="fc">© 2025 Vault · Personal Data Privacy Analyzer</div>
+            <div class="fc">🔒 Server-side processing · Files not stored permanently</div>
+        </footer>
+
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        /* ─── CONFIG ─────────────────────────────────────────────────── */
+        const API = 'http://localhost:5000';
+
+        /* ─── UTILITIES ──────────────────────────────────────────────── */
+        const $ = id => document.getElementById(id);
+        let scanTimer = null;
+
+        function toast(msg, dur = 4500) {
+            const t = $('toast'); t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), dur);
+        }
+
+        function showState(name) {
+            const map = { upload: 'su', processing: 'sp', results: 'sr' };
+            Object.entries(map).forEach(([k, id]) => {
+                $(id).style.display = (k === name) ? '' : 'none';
+            });
+        }
+
+        function mask(v) {
+            if (!v) return '—';
+            v = String(v);
+            if (v.length <= 4) return '••••';
+            return v.slice(0, 2) + '••••' + v.slice(-2);
+        }
+
+        function hex2rgba(hex, a) {
+            const r = parseInt(hex.slice(1, 3), 16),
+                g = parseInt(hex.slice(3, 5), 16),
+                b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r},${g},${b},${a})`;
+        }
+
+        /* ─── HEALTH CHECK ───────────────────────────────────────────── */
+        async function healthCheck() {
+            const dot = $('sdot'), txt = $('stxt');
+            try {
+                const r = await fetch(`${API}/api/health`, { signal: AbortSignal.timeout(4000) });
+                if (r.ok) { dot.className = 'dot on'; txt.textContent = 'Backend Online'; }
+                else throw 0;
+            } catch { dot.className = 'dot off'; txt.textContent = 'Backend Offline'; }
+        }
+        healthCheck();
+        setInterval(healthCheck, 15000);
+
+        /* ─── DRAG & DROP ────────────────────────────────────────────── */
+        const dz = $('dz');
+        dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+        dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+        dz.addEventListener('drop', e => {
+            e.preventDefault(); dz.classList.remove('drag');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        });
+        $('fi').addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+        /* ─── SCAN ANIMATION ─────────────────────────────────────────── */
+        const STEPS = [
+            'Initializing OCR engine…',
+            'Extracting text & bounding boxes…',
+            'Running 14-pattern PII detection…',
+            'Applying redaction masks…'
+        ];
+        let stepIdx = 0;
+
+        function startScan() {
+            stepIdx = 0; updateStep();
+            scanTimer = setInterval(() => { stepIdx = (stepIdx + 1) % STEPS.length; updateStep(); }, 1900);
+        }
+
+        function updateStep() {
+            const el = $('sstatus');
+            el.style.opacity = '0';
+            setTimeout(() => {
+                el.textContent = STEPS[stepIdx];
+                el.style.opacity = '1';
+                for (let i = 0; i < 4; i++) $('p' + i).className = 'pip' + (i <= stepIdx ? ' a' : '');
+            }, 200);
+        }
+
+        function stopScan() { if (scanTimer) { clearInterval(scanTimer); scanTimer = null; } }
+
+        /* ─── RISK GAUGE ─────────────────────────────────────────────── */
+        function animateRisk(score) {
+            const arc = $('rarc'), valEl = $('rval'),
+                titleEl = $('rtitle'), descEl = $('rdesc');
+            const circ = 251.2;
+            const offset = circ - (score / 100) * circ;
+
+            let col, title, desc;
+            if (score >= 70) { col = '#FF5F6D'; title = '⚠ High Risk Detected'; desc = 'Critical sensitive data found. Strongly recommended to use the redacted version before sharing.'; }
+            else if (score >= 35) { col = '#FFBA49'; title = '⚡ Moderate Risk'; desc = 'Personally identifiable information detected. Review the findings and share the redacted file.'; }
+            else if (score > 0) { col = '#9B6DFF'; title = '🔵 Low Risk'; desc = 'Minor sensitive data detected. Review findings below and share the sanitized version.'; }
+            else { col = '#00D97E'; title = '✅ Document is Clean'; desc = 'No recognized PII patterns found. This document appears safe to share as-is.'; }
+
+            arc.style.stroke = col;
+            arc.style.strokeDashoffset = offset;
+            valEl.style.color = col;
+            titleEl.textContent = title;
+            descEl.textContent = desc;
+
+            let cur = 0;
+            const step = Math.max(1, Math.floor(score / 45));
+            const c = setInterval(() => { cur = Math.min(cur + step, score); valEl.textContent = cur; if (cur >= score) clearInterval(c); }, 28);
+        }
+
+        /* ─── SEVERITY PILLS ─────────────────────────────────────────── */
+        function renderPills(counts) {
+            const wrap = $('spills'); wrap.innerHTML = '';
+            const map = { critical: '🔴 Critical', high: '🟡 High', medium: '🟣 Medium', low: '🔵 Low' };
+            Object.entries(map).forEach(([k, lbl]) => {
+                const n = counts[k] || 0; if (!n) return;
+                wrap.innerHTML += `<div class="spl ${k}">${lbl} &middot; ${n}</div>`;
+            });
+            if (!wrap.innerHTML) wrap.innerHTML = '<div class="spl low">No PII Found</div>';
+        }
+
+        /* ─── FINDINGS GRID ──────────────────────────────────────────── */
+        function renderFindings(findings) {
+            const sec = $('fsec');
+            const lbl = `<div class="slabel">${findings.length} Finding${findings.length !== 1 ? 's' : ''} Detected</div>`;
+
+            if (!findings.length) {
+                sec.innerHTML = lbl + `<div class="nofind glass">
+      <div class="nofind-icon">🛡️</div>
+      <h3>Document is Clean</h3>
+      <p>No sensitive PII patterns were detected. Safe to share.</p>
+    </div>`;
+                return;
+            }
+
+            const cards = findings.map((f, i) => {
+                const col = f.color || '#888';
+                const bg = hex2rgba(col, .09), bd = hex2rgba(col, .22);
+                const ibg = hex2rgba(col, .14), ibd = hex2rgba(col, .28);
+                const delay = Math.min(i * 45, 380);
+                return `<div class="fcard anim-up" style="background:${bg};border-color:${bd};animation-delay:${delay}ms">
+      <div class="fibox" style="background:${ibg};border-color:${ibd}">${f.icon || '📋'}</div>
+      <div class="fbody">
+        <div class="ftype">${f.type}</div>
+        <div class="fval" title="${f.value}">${mask(f.value)}</div>
+        <div class="sbadge ${f.severity || 'low'}" style="color:${col};border-color:${bd};background:${ibg}">${f.severity || 'low'}</div>
+      </div>
+    </div>`;
+            }).join('');
+
+            sec.innerHTML = lbl + `<div class="fgrid">${cards}</div>`;
+        }
+
+        /* ─── PREVIEW ────────────────────────────────────────────────── */
+        function renderPreview(result) {
+            const area = $('prevarea');
+            const ext = (result.redacted_ext || '').toLowerCase();
+            const imgs = ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'tiff'];
+            const mime = ext === 'jpg' ? 'jpeg' : ext;
+
+            if (result.redacted_b64 && imgs.includes(ext)) {
+                area.innerHTML = `<div class="imgprev">
+      <img src="data:image/${mime};base64,${result.redacted_b64}" alt="Redacted preview"/>
+    </div>`;
+            } else {
+                const icons = { pdf: '📕', docx: '📝', xlsx: '📊', xls: '📊', txt: '📄' };
+                area.innerHTML = `<div class="imgprev">
+      <div class="noprev">
+        <div class="noprev-icon">${icons[ext] || '📁'}</div>
+        <p>Live preview not available for <strong>.${ext}</strong> files.<br/>
+        Use the <strong>Download Safe File</strong> button above to save the redacted version.</p>
+      </div>
+    </div>`;
+            }
+
+            const txw = $('txwrap'), txp = $('txprev');
+            if (result.raw_text_preview && result.raw_text_preview.trim()) {
+                txw.style.display = ''; txp.textContent = result.raw_text_preview;
+            } else {
+                txw.style.display = 'none';
+            }
+        }
+
+        /* ─── DOWNLOAD ───────────────────────────────────────────────── */
+        function setupDownload(result) {
+            $('dlbtn').onclick = () => {
+                if (!result.redacted_b64) { toast('No redacted file available.'); return; }
+                try {
+                    const bs = atob(result.redacted_b64);
+                    const ab = new ArrayBuffer(bs.length);
+                    const ia = new Uint8Array(ab);
+                    for (let i = 0; i < bs.length; i++) ia[i] = bs.charCodeAt(i);
+                    const mimes = {
+                        pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+                        webp: 'image/webp', bmp: 'image/bmp',
+                        docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        xls: 'application/vnd.ms-excel', txt: 'text/plain'
+                    };
+                    const ext = (result.redacted_ext || 'bin').toLowerCase();
+                    const blob = new Blob([ab], { type: mimes[ext] || 'application/octet-stream' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = `safe_${result.filename || 'document.' + ext}`; a.click();
+                    URL.revokeObjectURL(url);
+                } catch (e) { toast('Download failed: ' + e.message); }
+            };
+        }
+
+        /* ─── RENDER RESULTS ─────────────────────────────────────────── */
+        function renderResults(data) {
+            const sum = data.summary || {}, f = data.findings || [];
+            $('ofname').textContent = data.filename || '—';
+            $('otype').textContent = data.file_type || '—';
+            $('opages').textContent = `${data.page_count || 1} page${(data.page_count || 1) > 1 ? 's' : ''}`;
+            $('ocount').textContent = `${f.length} finding${f.length !== 1 ? 's' : ''}`;
+            animateRisk(sum.risk_score || 0);
+            renderPills(sum.severity_counts || {});
+            renderFindings(f);
+            renderPreview(data);
+            setupDownload(data);
+            showState('results');
+        }
+
+        /* ─── MAIN HANDLER ───────────────────────────────────────────── */
+        async function handleFile(file) {
+            showState('processing');
+            startScan();
+            const fd = new FormData();
+            fd.append('file', file);
+
+            try {
+                const res = await fetch(`${API}/api/analyze`, { method: 'POST', body: fd });
+                stopScan();
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+                    toast('Server error: ' + (err.error || res.statusText));
+                    showState('upload'); return;
+                }
+                const data = await res.json();
+                if (data.error) { toast('Error: ' + data.error); showState('upload'); return; }
+                renderResults(data);
+            } catch (e) {
+                stopScan();
+                toast(`Cannot reach backend at ${API}. Is Flask running? (python app.py)`);
+                showState('upload');
+                console.error('[Vault]', e);
+            }
+            $('fi').value = '';
+        }
+
+        /* ─── RESET ──────────────────────────────────────────────────── */
+        function resetApp() {
+            $('fsec').innerHTML = '';
+            $('prevarea').innerHTML = '';
+            $('txwrap').style.display = 'none';
+            showState('upload');
+        }
+
+        /* ─── INIT ───────────────────────────────────────────────────── */
+        showState('upload');
+    </script>
+</body>
+
+</html>
