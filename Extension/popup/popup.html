@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vault PII Shield</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 340px;
+      background: #0a0b0f;
+      color: #e8eaf0;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: 14px;
+      min-height: 480px;
+      overflow: hidden;
+    }
+
+    /* Ambient glow */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -60px; left: -60px;
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ─── Header ─── */
+    .header {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid #111827;
+      position: relative;
+    }
+    .header-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .brand-logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #6366f1 0%, #a78bfa 100%);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 12px rgba(99,102,241,0.35);
+    }
+    .brand-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: #fff;
+    }
+    .brand-tag {
+      font-size: 10px;
+      font-weight: 500;
+      color: #4f46e5;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* Toggle */
+    .toggle-wrap { display: flex; align-items: center; gap: 8px; }
+    .toggle-label { font-size: 11px; color: #6b7280; }
+    .toggle {
+      width: 38px; height: 21px;
+      background: #1e2130; border-radius: 99px;
+      cursor: pointer; position: relative;
+      transition: background 0.25s;
+      border: 1px solid #2d3148;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: #4f46e5; border-color: #4f46e5; }
+    .toggle::after {
+      content: '';
+      position: absolute; top: 2px; left: 2px;
+      width: 15px; height: 15px;
+      background: #fff; border-radius: 50%;
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .toggle.on::after { transform: translateX(17px); }
+
+    /* Status pill */
+    .status-pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px;
+      background: #0f1117;
+      border: 1px solid #1e2130;
+      border-radius: 10px;
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 6px rgba(34,197,94,0.5);
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+    .status-dot.off { background: #374151; box-shadow: none; animation: none; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .status-text { font-size: 12px; color: #9ca3af; }
+    .status-text strong { color: #d1d5db; font-weight: 600; }
+
+    /* ─── Stats ─── */
+    .stats {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #111827;
+    }
+    .stat-card {
+      background: #0f1117;
+      border: 1px solid #1e2130;
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: border-color 0.2s;
+    }
+    .stat-card:hover { border-color: #2d3148; }
+    .stat-label {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.08em; color: #6b7280;
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px; font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, #fff, #9ca3af);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-value.danger {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-sub { font-size: 10px; color: #4b5563; margin-top: 4px; }
+
+    /* ─── What We Detect ─── */
+    .section {
+      padding: 16px 20px;
+      border-bottom: 1px solid #111827;
+    }
+    .section-title {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.1em; color: #4b5563;
+      margin-bottom: 12px; font-weight: 600;
+    }
+    .detect-grid {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .detect-chip {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 9px;
+      background: #0f1117;
+      border: 1px solid #1e2130;
+      border-radius: 6px;
+      font-size: 11px; color: #9ca3af;
+      cursor: default;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .detect-chip:hover { border-color: #4f46e5; color: #a5b4fc; }
+    .detect-chip span { font-size: 13px; }
+
+    /* ─── Server config ─── */
+    .server-section { padding: 14px 20px; }
+    .server-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .server-input {
+      flex: 1;
+      background: #0f1117;
+      border: 1px solid #1e2130;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #d1d5db;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .server-input:focus { border-color: #4f46e5; }
+    .server-btn {
+      padding: 8px 14px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .server-btn:hover { background: #4338ca; }
+    .server-status {
+      font-size: 10px; color: #6b7280; margin-top: 6px;
+      display: flex; align-items: center; gap: 5px;
+    }
+
+    /* ─── Footer ─── */
+    .footer {
+      padding: 10px 20px 14px;
+      text-align: center;
+      font-size: 10px;
+      color: #1f2937;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="brand">
+        <div class="brand-logo">🔐</div>
+        <div>
+          <div class="brand-name">Vault</div>
+          <div class="brand-tag">PII Shield</div>
+        </div>
+      </div>
+      <div class="toggle-wrap">
+        <span class="toggle-label" id="toggle-label">ON</span>
+        <div class="toggle on" id="main-toggle" title="Enable/Disable shield"></div>
+      </div>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot" id="status-dot"></div>
+      <div class="status-text" id="status-text">
+        Shield is <strong>active</strong> — all file uploads are being monitored
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Files Scanned</div>
+      <div class="stat-value" id="stat-scanned">0</div>
+      <div class="stat-sub">This session</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Uploads Blocked</div>
+      <div class="stat-value danger" id="stat-blocked">0</div>
+      <div class="stat-sub">PII detected</div>
+    </div>
+  </div>
+
+  <!-- What we detect -->
+  <div class="section">
+    <div class="section-title">Detects</div>
+    <div class="detect-grid">
+      <div class="detect-chip"><span>🪪</span> Aadhaar</div>
+      <div class="detect-chip"><span>💳</span> PAN Card</div>
+      <div class="detect-chip"><span>📱</span> Phone</div>
+      <div class="detect-chip"><span>📧</span> Email</div>
+      <div class="detect-chip"><span>📘</span> Passport</div>
+      <div class="detect-chip"><span>🏦</span> Bank Acc</div>
+      <div class="detect-chip"><span>🚗</span> DL</div>
+      <div class="detect-chip"><span>💰</span> Card No.</div>
+      <div class="detect-chip"><span>🏛️</span> IFSC</div>
+      <div class="detect-chip"><span>🧾</span> GST</div>
+      <div class="detect-chip"><span>🗳️</span> Voter ID</div>
+      <div class="detect-chip"><span>📍</span> Pincode</div>
+    </div>
+  </div>
+
+  <!-- Server config -->
+  <div class="server-section">
+    <div class="section-title" style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#4b5563;margin-bottom:10px;font-weight:600">Backend Server</div>
+    <div class="server-row">
+      <input type="text" class="server-input" id="api-url" value="http://localhost:5000" placeholder="http://localhost:5000">
+      <button class="server-btn" id="save-api">Save</button>
+    </div>
+    <div class="server-status" id="server-status">
+      <span>○</span> <span>Testing connection...</span>
+    </div>
+  </div>
+
+  <div class="footer">VAULT PII SHIELD · LOCAL PROCESSING · YOUR DATA STAYS YOURS</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
