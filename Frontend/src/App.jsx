@@ -220,9 +220,6 @@ function UploadPhase({ dragOver, setDragOver, onDrop, fileInputRef, onInputChang
       {/* Feature pills */}
       <div className="mt-8 grid grid-cols-3 gap-3">
         {[
-          { icon: '🔒', label: '100% Local', sub: 'Processed on your server' },
-          { icon: '⚡', label: '14 PII Types', sub: 'Aadhaar, PAN, IFSC & more' },
-          { icon: '📄', label: '6 Formats', sub: 'PDF, DOCX, XLSX, images' },
         ].map(({ icon, label, sub }) => (
           <div key={label} className="bg-white border border-gray-100 rounded-xl p-4 text-center shadow-sm">
             <div className="text-2xl mb-1">{icon}</div>
