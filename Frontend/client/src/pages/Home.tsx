@@ -78,7 +78,7 @@ export default function Home() {
 
     try {
       // Make POST request to backend
-      const response = await fetch("http://localhost:8000/sanitize-document/", {
+      const response = await fetch("http://localhost:5000/api/analyze", {
         method: "POST",
         body: formData,
       });
@@ -89,7 +89,7 @@ export default function Home() {
 
       // Handle response - expect image blob or base64
       const contentType = response.headers.get("content-type");
-      
+
       if (contentType?.includes("application/json")) {
         const data = await response.json();
         if (data.image) {
