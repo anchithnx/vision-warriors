@@ -18,7 +18,7 @@ import easyocr
 import numpy as np
 
 # Initialize the reader once at the top of your file (outside the function)
-reader = easyocr.Reader(['en'])
+reader = easyocr.Reader(['en'], gpu=False)
 
 app = Flask(__name__)
 CORS(app)
