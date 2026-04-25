@@ -1,4 +1,4 @@
-# Vision Warriors - PII Detection and Redaction Tool
+# Vision Warriors - Personal Data Privacy Analyzer
 
 A document privacy scanner that automatically detects and redacts Personally Identifiable Information (PII) from uploaded files. Built for Indian document formats, the tool supports PDFs, images, Word documents, Excel spreadsheets, and plain text files.
 
