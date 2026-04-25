@@ -80,6 +80,17 @@ vision-warriors-main/
 ├── test_documents/             # Sample mock tax return images
 ├── generate_dataset.py         # Script to generate test documents
 └── requirements.txt
+extension/
+├── manifest.json        # Extension configuration (Manifest V3)
+├── content.js           # Main script — intercepts uploads on every page
+├── background.js        # Service worker — stats, badge updates
+├── icons/
+│   ├── icon16.png
+│   ├── icon48.png
+│   └── icon128.png
+└── popup/
+    ├── popup.html       # Extension toolbar popup UI
+    └── popup.js         # Popup logic (toggle, stats, server config)
 ```
 
 ---
