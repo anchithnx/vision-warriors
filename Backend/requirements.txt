@@ -7,5 +7,5 @@ reportlab==4.0.8
 pillow==10.1.0
 openpyxl==3.1.2
 python-docx==1.1.0
-pytesseract==0.3.10
+easyocr
 gunicorn
