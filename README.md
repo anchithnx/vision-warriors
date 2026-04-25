@@ -241,5 +241,5 @@ Vision Warriors
 |---|---|
 | 1 | Anjali V |
 | 2 | Anchith Shantivana C |
-| 3 | Akshay P BS |
-| 4 | Sujay Krishna |
+| 3 | Akshay P  |
+| 4 |  BS Sujay Krishna |
