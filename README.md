@@ -6,7 +6,7 @@ A document privacy scanner that automatically detects and redacts Personally Ide
 
 ## Problem Statement
 
-Documents shared in professional and personal contexts — tax returns, contracts, ID proofs — often contain sensitive information such as Aadhaar numbers, PAN cards, bank account details, and phone numbers. Manually identifying and redacting this data is time-consuming and error-prone. This tool automates the entire pipeline: upload a document, detect all PII, and download a redacted version in seconds.
+Documents shared in professional and personal contexts  tax returns, contracts, ID proofs often contain sensitive information such as Aadhaar numbers, PAN cards, bank account details, and phone numbers. Manually identifying and redacting this data is time-consuming and error-prone. This tool automates the entire pipeline: upload a document, detect all PII, and download a redacted version in seconds.Users often unknowingly share sensitive personal information in documents, increasing the risk of data breaches and misuse. 
 
 ---
 
