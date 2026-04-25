@@ -171,7 +171,7 @@ function UploadPhase({ dragOver, setDragOver, onDrop, fileInputRef, onInputChang
           <span className="text-crimson-600">Not your identity.</span>
         </h1>
         <p className="text-gray-500 font-body text-lg max-w-md mx-auto leading-relaxed">
-          Upload any document. We detect and redact Aadhaar, PAN, phone numbers, and 14 other PII types before you share.
+
         </p>
       </div>
 
