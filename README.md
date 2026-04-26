@@ -235,7 +235,7 @@ This gives a 0-100 score representing overall document exposure based on the sev
 
 ## Team
 
-VISSION WARRIORS
+VISION WARRIORS
 
 | No. | Name |
 |---|---|
